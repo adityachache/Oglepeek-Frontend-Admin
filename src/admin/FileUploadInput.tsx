@@ -1,15 +1,16 @@
 import React from "react";
 import { Button, TextField, Box } from "@mui/material";
-import { useFormContext, useWatch } from "react-hook-form";
 
-const FileUploadInput = () => {
-  const { setValue, control } = useFormContext();
-  const selectedImages = useWatch({ control, name: "images" });
+type Props = {
+  onUpload: (files: File[]) => void;
+  selectedFiles: File[];
+};
 
+const FileUploadInput: React.FC<Props> = ({ onUpload, selectedFiles }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      setValue("images", files, { shouldValidate: true });
+      onUpload(files); // Send files to parent component
     }
   };
 
@@ -32,15 +33,15 @@ const FileUploadInput = () => {
         </Button>
       </label>
 
-      {/* TextField to show file names */}
+      {/* Show selected file names */}
       <Box mt={2}>
         <TextField
           label="Selected Image Names"
-          value={selectedImages?.map((f) => f.name).join(", ") || ""}
+          value={selectedFiles?.map((f) => f.name).join(", ") || ""}
           fullWidth
           multiline
           rows={3}
-          InputProps={{ readOnly: true }}
+          slotProps={{ input: { readOnly: true } }}
         />
       </Box>
     </Box>

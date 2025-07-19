@@ -67,7 +67,7 @@ export const ProductGrid = () => {
 
   const { data: allProducts, isLoading } = useGetAllProductsQuery();
 
-  // console.log(allProducts);
+  console.log(allProducts);
 
   const productData =
     allProducts?.map((product) => ({

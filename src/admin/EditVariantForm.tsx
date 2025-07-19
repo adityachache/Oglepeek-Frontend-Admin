@@ -3,11 +3,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { DropdownInput } from "./DropdownInput";
 import { TextInput } from "./TextInput";
-import { Button } from "@mui/material";
+import { Button, Grid, IconButton } from "@mui/material";
 import { CheckboxInput } from "./CheckboxInput";
 import FileUploadInput from "./FileUploadInput";
 import { useUpdateVariantMutation } from "../services/api";
 import type { Variant } from "./ProductGrid";
+import { useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 type Props = {
   variant: Variant;
@@ -27,6 +29,11 @@ const schema = yup
 
 export const EditVariantForm = ({ variant }: Props) => {
   type FormValues = yup.InferType<typeof schema>;
+
+  const [existingImages, setExistingImages] = useState<string[]>(
+    variant.images || []
+  );
+  const [newImages, setNewImages] = useState<File[]>([]);
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema),
@@ -60,6 +67,14 @@ export const EditVariantForm = ({ variant }: Props) => {
         console.error(err);
         alert(err?.data?.message);
       });
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -123,13 +138,69 @@ export const EditVariantForm = ({ variant }: Props) => {
             </div>
 
             <div>
-              <FileUploadInput />
+              <FileUploadInput
+                onUpload={(files) =>
+                  setNewImages((prev) => [...prev, ...files])
+                }
+                selectedFiles={newImages}
+              />
             </div>
 
             <div>
               <CheckboxInput name="hidden" label="Hidden" />
             </div>
           </div>
+
+          <Grid container spacing={2} mt={2}>
+            {existingImages.map((url, index) => (
+              <Grid key={`existing-${index}`}>
+                <div style={{ position: "relative" }}>
+                  <img
+                    src={url}
+                    alt="existing"
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "cover",
+                      borderRadius: 4,
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => removeExistingImage(index)}
+                    style={{ position: "absolute", top: 0, right: 0 }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              </Grid>
+            ))}
+
+            {newImages.map((file, index) => (
+              <Grid key={`new-${index}`}>
+                <div style={{ position: "relative" }}>
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="new"
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "cover",
+                      borderRadius: 4,
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => removeNewImage(index)}
+                    style={{ position: "absolute", top: 0, right: 0 }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </div>
+              </Grid>
+            ))}
+          </Grid>
+
           <div>
             <Button type="submit" variant="contained">
               Update
